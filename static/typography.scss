@@ -1,0 +1,62 @@
+@layer base {
+	/* purgecss start ignore */
+	body {
+		@apply text-base text-black;
+	}
+
+	[class*='wysiwyg'] a {
+		@apply text-primary;
+		&:hover {
+			@apply underline;
+		}
+	}
+
+	b,
+	strong {
+		@apply font-bold;
+	}
+
+	p {
+		@apply mb-6;
+	}
+
+	em {
+		@apply italic;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		@apply text-black font-primary;
+	}
+
+	h1 {
+		@apply text-2xl mb-7 ;
+	}
+
+	h2 {
+		@apply text-xl font-bold mb-5;
+	}
+
+	h3 {
+		@apply text-lg font-bold mb-3;
+	}
+
+	h4 {
+		@apply text-md font-bold mb-2;
+	}
+
+	h5 {
+		@apply text-md mb-2;
+	}
+    .right-content a {
+        @apply text-red
+    }
+    .tsch-tabs-desktop ul a {
+        @apply text-white
+    }
+	/* purgecss end ignore */
+}

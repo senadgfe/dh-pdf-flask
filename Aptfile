@@ -1,0 +1,9 @@
+libffi-dev
+libmupdf-dev
+libgl1
+tesseract-ocr
+libtesseract-dev
+libleptonica-dev
+libarchive13
+libpng-dev
+poppler-utils

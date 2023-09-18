@@ -1,0 +1,19 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@import 'components.scss';
+@import 'typography.scss';
+
+body {
+  @apply bg-white;
+}
+
+ul {
+    list-style-type: disc;
+    list-style-position: inside;
+}
+
+h3 {
+    margin-top: 20px;
+}

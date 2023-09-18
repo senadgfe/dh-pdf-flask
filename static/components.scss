@@ -1,0 +1,67 @@
+@layer components {
+	 
+	.btn {
+		@apply bg-red font-primary text-sm leading-4 text-white font-bold rounded-full border border-red;
+		padding: 1rem 1.5rem;
+
+		&:hover {
+			@apply bg-white border-black text-black;
+		}
+	}
+	.btn-primary {
+		align-items: center;
+		justify-content: center;
+		display: inline-flex;
+	}
+	 
+}
+
+.form-fields {
+
+	.form-group {
+		position: relative;
+	}
+	
+	label {
+		@apply absolute left-0 text-black bg-white pointer-events-none rounded;
+		top: 50%;
+		transform: translateY(-50%);
+		padding: 0 0.3rem;
+		margin: 0 0.5rem;
+		transition: 0.1s ease-out;
+		transform-origin: left top;
+	}
+	
+	input {
+    @apply outline-none border border-black rounded;
+		padding: 1rem 0.7rem;
+		transition: 0.1s ease-out;
+	}
+	
+	input:focus {
+		@apply border-primary;
+	}
+	
+	input:focus+label {
+		@apply top-0;
+		transform: translateY(-50%) scale(0.9) !important;
+	}
+	
+	input:not(:placeholder-shown)+label {
+		@apply top-0;
+		transform: translateY(-50%) scale(0.9) !important;
+	}
+	
+	input:not(:focus)::placeholder {
+		@apply opacity-0;
+	}
+ 
+}
+
+.events-activation {
+	 input:checked ~ .dot {
+    transform: translateX(100%);
+    background-color: #f6bb62;
+    }
+}
+ 

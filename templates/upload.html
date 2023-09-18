@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Doppelherz Product Description Generator</title>
+  <link href="{{ url_for('static', filename='output.css') }}" rel="stylesheet" type="text/css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+
+<body>
+  <div class="container">
+    <h2 class="mt-4">Doppelherz Product Description Generator</h2>
+    <form method="POST" action="/" enctype="multipart/form-data">
+
+<div class="flex gap-6 justify-between">
+  <label id="fileLabel" class="w-full h-full flex-col items-center px-5 py-2 mb-0 bg-white text-black uppercase border border-red cursor-pointer hover:bg-red hover:text-white">
+    <div id="fileName" class=" flex justify-center">Select a PDF file</div>
+    <input type="file" name="file" accept=".pdf" class="hidden" onchange="updateFileName(event)" />
+  </label>
+  <button class="w-full max-w-62 flex btn btn-primary" type="submit">Informationen generieren</button>
+</div>
+
+<script>
+function updateFileName(event) {
+  const input = event.target;
+  const fileNameElement = document.getElementById("fileName");
+  if (input.files.length > 0) {
+    fileNameElement.textContent = input.files[0].name;
+  } else {
+    fileNameElement.textContent = "Select a PDF file";
+  }
+}
+</script>
+
+     
+    </form>
+{% if text_dimensions %}
+  <h3 class="mt-8">1. Abmessungen der Schachtel:</h3>
+  <div class="shadow-md p-4">
+    <div>{{ text_dimensions }}</div>
+  </div>
+{% endif %}
+    
+{% if dimensions %}
+    <h3 class="mt-8">2. Bild Abmessungen:</h3>
+    <div  class="shadow-md p-4">
+      {% for dimension in dimensions %}
+      <div>{{ dimension }}</div>
+      {% endfor %}
+    </div>
+ {% endif %}
+
+    <div>
+      {% if sub_image_paths %}
+        <h3 class="mt-8">3. Packshot image:</h3>
+        <div class="image-container">
+        {% for sub_image_path in sub_image_paths %}
+        <img style="border: 1px solid black;" src="{{ url_for('static', filename=sub_image_path) }}" alt="Sub Image">
+        {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+      <div>
+     
+  </div>
+
+  <div>
+{% if sub_image_paths_box_outlines %}
+  <h3 class="mt-8">4. Images with Cutter:</h3>
+  <div class="image-container">
+    {% for sub_image_path_box_outlines in sub_image_paths_box_outlines %}
+      <img style="border: 1px solid black;" src="{{ url_for('static', filename=sub_image_path_box_outlines) }}" alt="Image with Cutter">
+    {% endfor %}
+  </div>
+{% endif %}
+</div>
+
+  {% if model_variation %}
+    <div>
+      <h4 class="mt-8">5. Model variation: <span style="color:red;">{{ model_variation }}</span></h4>
+    </div>
+  {% endif %}
+  
+
+   <br><br>
+  </div>
+</body>
+
+</html>
