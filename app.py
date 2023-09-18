@@ -22,15 +22,6 @@ application.config['MAX_CONTENT_LENGTH'] = 16 * \
     1024 * 1024  # 16MB upload limit
 
 
-MODELS = {
-    'Breite:85.0mm,Tiefe:25.0mm,Höhe:122.0mm': 'DH85x25x122',
-    '90x30x110': 'Model90x30x110',
-    'Breite:34.0mm,Tiefe:341.0mm,Höhe:87.0mm': 'Model34x341x87',
-    'Breite:31.0mm,Tiefe:1.0mm,Höhe:87.0mm': 'Model31x31x87',
-    'Breite:31.0mm,Tiefe:31.0mm,Höhe:87.0mm': 'Model31x31x87'
-}
-
-
 def generate_model_name(dimensions):
     # Split the dimensions using commas
     dimensions_list = dimensions.split(',')
@@ -76,7 +67,7 @@ def hide_layers_box_outlines(file_path):
     offLayer = layer.get("off", [])
 
     for key in ocgs:
-        if ocgs[key]['name'].lower().find('stanz') > -1 or ocgs[key]['name'].lower().find('maß') > -1 or ocgs[key]['name'].lower().find('bemassung') > -1 or ocgs[key]['name'].lower().find('vermassung') > -1 or ocgs[key]['name'].lower().find('kontur') > -1 or ocgs[key]['name'].lower().find('dispersion') > -1 or ocgs[key]['name'].lower().find('lack') > -1 or ocgs[key]['name'].lower().find('guides') > -1 or ocgs[key]['name'].lower().find('jobinfo') > -1 or ocgs[key]['name'].lower().find('braille') > -1 or ocgs[key]['name'].lower().find('faz') > -1 or ocgs[key]['name'].lower().find('praegung') > -1 or ocgs[key]['name'].lower().find('blinden') > -1 or ocgs[key]['name'].lower().find('varnish') > -1:
+        if ocgs[key]['name'].lower().find('maß') > -1 or ocgs[key]['name'].lower().find('bemassung') > -1 or ocgs[key]['name'].lower().find('vermassung') > -1 or ocgs[key]['name'].lower().find('dispersion') > -1 or ocgs[key]['name'].lower().find('lack') > -1 or ocgs[key]['name'].lower().find('jobinfo') > -1 or ocgs[key]['name'].lower().find('braille') > -1 or ocgs[key]['name'].lower().find('faz') > -1 or ocgs[key]['name'].lower().find('praegung') > -1 or ocgs[key]['name'].lower().find('blinden') > -1 or ocgs[key]['name'].lower().find('varnish') > -1:
             if key in onLayer:
                 onLayer.remove(key)
                 offLayer.append(key)
