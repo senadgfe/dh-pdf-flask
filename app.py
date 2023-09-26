@@ -102,7 +102,7 @@ def hide_layers(file_path):
 
     # Save the modified PDF and return its file path
     new_file_path = os.path.join(
-        application.config['UPLOAD_FOLDER'], "hidden_layers_" + os.path.basename(file_path))
+        application.config['UPLOAD_FOLDER'], os.path.basename(file_path) + "_hl")
     doc2.save(new_file_path, garbage=4)
     doc2.close()
 
