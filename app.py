@@ -1,19 +1,18 @@
-from flask import Flask, request, redirect, url_for, render_template
+from flask import Flask, request, redirect, url_for, render_template, flash
 from werkzeug.utils import secure_filename
 import os
 import pytesseract
 from pdf2image import convert_from_path
 import fitz
 import numpy as np
-from datetime import datetime
-from flask import flash
 import re
 import cv2
 from PIL import Image, ImageDraw, ImageFont
 
-application = Flask(__name__) 
+application = Flask(__name__)
 
-# Configurationsl
+
+# Configuration
 UPLOAD_FOLDER = './static/uploads'
 UPLOAD_FOLDER_ANNOTATED = './static/uploads/annotated'
 ALLOWED_EXTENSIONS = {'pdf'}
@@ -21,6 +20,7 @@ application.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 application.config['UPLOAD_FOLDER_ANNOTATED'] = UPLOAD_FOLDER_ANNOTATED
 application.config['MAX_CONTENT_LENGTH'] = 16 * \
     1024 * 1024  # 16MB upload limit
+
 
 
 def generate_model_name(dimensions):
@@ -60,7 +60,7 @@ def extract_text_from_pdf(file_path):
     return extracted_text
 
 
-def hide_layers_box_outlines(file_path):
+def hide_layers_box_outlines(file_path, specific_layer=None):
     doc = fitz.open(file_path)
 
     ocgs = doc.get_ocgs()
@@ -68,11 +68,18 @@ def hide_layers_box_outlines(file_path):
     onLayer = layer.get("on", [])
     offLayer = layer.get("off", [])
 
-    for key in ocgs:
-        if ocgs[key]['name'].lower().find('maß') > -1 or ocgs[key]['name'].lower().find('bemassung') > -1 or ocgs[key]['name'].lower().find('vermassung') > -1 or ocgs[key]['name'].lower().find('dispersion') > -1 or ocgs[key]['name'].lower().find('lack') > -1 or ocgs[key]['name'].lower().find('jobinfo') > -1 or ocgs[key]['name'].lower().find('braille') > -1 or ocgs[key]['name'].lower().find('faz') > -1 or ocgs[key]['name'].lower().find('praegung') > -1 or ocgs[key]['name'].lower().find('blinden') > -1 or ocgs[key]['name'].lower().find('varnish') > -1:
-            if key in onLayer:
-                onLayer.remove(key)
-                offLayer.append(key)
+    if specific_layer:
+        for key in ocgs:
+            if ocgs[key]['name'].lower() not in specific_layer:
+                if key in onLayer:
+                    onLayer.remove(key)
+                    offLayer.append(key)
+    else:
+        for key in ocgs:
+            if ocgs[key]['name'].lower().find('maß') > -1 or ocgs[key]['name'].lower().find('bemassung') > -1 or ocgs[key]['name'].lower().find('vermassung') > -1 or ocgs[key]['name'].lower().find('dispersion') > -1 or ocgs[key]['name'].lower().find('lack') > -1 or ocgs[key]['name'].lower().find('jobinfo') > -1 or ocgs[key]['name'].lower().find('braille') > -1 or ocgs[key]['name'].lower().find('faz') > -1 or ocgs[key]['name'].lower().find('praegung') > -1 or ocgs[key]['name'].lower().find('blinden') > -1 or ocgs[key]['name'].lower().find('varnish') > -1:
+                if key in onLayer:
+                    onLayer.remove(key)
+                    offLayer.append(key)
 
     doc.set_layer(-1, on=onLayer, off=offLayer)
 
@@ -85,7 +92,8 @@ def hide_layers_box_outlines(file_path):
     return new_file_path
 
 
-def hide_layers(file_path):
+
+def hide_layers(file_path, specific_layer=None):
     doc2 = fitz.open(file_path)
 
     ocgs = doc2.get_ocgs()
@@ -93,11 +101,18 @@ def hide_layers(file_path):
     onLayer = layer.get("on", [])
     offLayer = layer.get("off", [])
 
-    for key in ocgs:
-        if ocgs[key]['name'].lower().find('stanz') > -1 or ocgs[key]['name'].lower().find('maß') > -1 or ocgs[key]['name'].lower().find('bemassung') > -1 or ocgs[key]['name'].lower().find('vermassung') > -1 or ocgs[key]['name'].lower().find('kontur') > -1 or ocgs[key]['name'].lower().find('dispersion') > -1 or ocgs[key]['name'].lower().find('lack') > -1 or ocgs[key]['name'].lower().find('guides') > -1 or ocgs[key]['name'].lower().find('jobinfo') > -1 or ocgs[key]['name'].lower().find('braille') > -1 or ocgs[key]['name'].lower().find('faz') > -1 or ocgs[key]['name'].lower().find('praegung') > -1 or ocgs[key]['name'].lower().find('blinden') > -1 or ocgs[key]['name'].lower().find('cutter') > -1 or ocgs[key]['name'].lower().find('varnish') > -1:
-            if key in onLayer:
-                onLayer.remove(key)
-                offLayer.append(key)
+    if specific_layer:
+        for key in ocgs:
+            if ocgs[key]['name'].lower() not in specific_layer:
+                if key in onLayer:
+                    onLayer.remove(key)
+                    offLayer.append(key)
+    else:
+        for key in ocgs:
+            if ocgs[key]['name'].lower().find('stanz') > -1 or ocgs[key]['name'].lower().find('maß') > -1 or ocgs[key]['name'].lower().find('bemassung') > -1 or ocgs[key]['name'].lower().find('vermassung') > -1 or ocgs[key]['name'].lower().find('kontur') > -1 or ocgs[key]['name'].lower().find('dispersion') > -1 or ocgs[key]['name'].lower().find('lack') > -1 or ocgs[key]['name'].lower().find('guides') > -1 or ocgs[key]['name'].lower().find('jobinfo') > -1 or ocgs[key]['name'].lower().find('braille') > -1 or ocgs[key]['name'].lower().find('faz') > -1 or ocgs[key]['name'].lower().find('praegung') > -1 or ocgs[key]['name'].lower().find('blinden') > -1 or ocgs[key]['name'].lower().find('cutter') > -1 or ocgs[key]['name'].lower().find('varnish') > -1:
+                if key in onLayer:
+                    onLayer.remove(key)
+                    offLayer.append(key)
 
     doc2.set_layer(-1, on=onLayer, off=offLayer)
 
@@ -108,6 +123,7 @@ def hide_layers(file_path):
     doc2.close()
 
     return new_file_path
+
 
 def extract_dimensions(text):
     # Replace commas with dots
@@ -176,11 +192,20 @@ def get_main_object_dimensions(image):
     return w, h
 
 
-def get_image_objects_dimensions_and_draw(image, cutter_image, image_name, model_variation):
+def get_image_objects_dimensions_and_draw(image, cutter_image, image_name, model_variation, file_path):
     # Create a copy of the original image to prevent color distortion and annotations
     original_image = image.copy()
     cutter_image_original = cutter_image.copy()
     print(original_image)
+
+    specific_layer_path = hide_layers(file_path, specific_layer=['dispersionslack', 'lack', 'dispersion', 'uv-lack'])
+    specific_layer_image = convert_from_path(specific_layer_path, dpi=600)[0]  # Assuming it's a single page
+
+    specific_layer_path_box_outlines = hide_layers_box_outlines(
+        file_path, specific_layer=['dispersionslack', 'lack', 'dispersion', 'uv-lack'])
+    specific_layer_image_box_outlines = convert_from_path(specific_layer_path_box_outlines, dpi=600)[0]  # Assuming it's a single page
+
+
     def extract_contours_and_crop(np_img, original_img):
         gray = cv2.cvtColor(np_img, cv2.COLOR_RGB2GRAY)
         _, binary = cv2.threshold(gray, 240, 255, cv2.THRESH_BINARY_INV)
@@ -203,9 +228,14 @@ def get_image_objects_dimensions_and_draw(image, cutter_image, image_name, model
         return cropped_image, x_min, x_max, y_min, y_max
 
     sub_image, x_min, x_max, y_min, y_max = extract_contours_and_crop(
-        np.array(original_image), original_image)
+        np.array(specific_layer_image), original_image)
+    
     sub_image_box_outlines, _, _, _, _ = extract_contours_and_crop(
-        np.array(original_image), cutter_image_original)
+        np.array(specific_layer_image_box_outlines), cutter_image_original)
+    
+    if None in [x_min, x_max, y_min, y_max]:
+        # Handle the case where the values are None, perhaps by returning early or setting default values
+        return None
 
     # Convert numpy images to PIL
     sub_image_pil = Image.fromarray(
@@ -299,7 +329,8 @@ def process_pdf(file_path):
     # Assuming both 'images' and 'images_box_outlines' have the same length
     for i in range(len(images)):
         result = get_image_objects_dimensions_and_draw(
-            images[i], images_box_outlines[i],image_name,model_variation)
+            images[i], images_box_outlines[i], image_name, model_variation, file_path)
+
 
         if result is not None:
             #image_file_paths.append(result["image_path"])
