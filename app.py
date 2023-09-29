@@ -30,12 +30,13 @@ def generate_model_name(dimensions):
     # Extract the numerical values using regex
     numbers = [re.search(r"(\d+\.\d+)", dim).group(1)
                for dim in dimensions_list if re.search(r"(\d+\.\d+)", dim)]
-
+    # get rid of .0 at the end
+    numbers = [num.split('.')[0] for num in numbers]
     # Generate the model name
-    if len(numbers) == 3:  # If there are three dimensions
-        return f"DH_{numbers[0]}x{numbers[1]}x{numbers[2]}"
+    if len(numbers) == 3:  # If there are three dimensions 
+        return f"MV{numbers[0]}x{numbers[1]}x{numbers[2]}"
     elif len(numbers) == 2:  # If there are two dimensions
-        return f"DH_{numbers[0]}x{numbers[1]}"
+        return f"MV{numbers[0]}x{numbers[1]}"
     else:
         return "ModelNotFound"
 
