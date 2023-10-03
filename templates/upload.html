@@ -14,9 +14,15 @@
 
 <div class="flex gap-6 justify-between">
   <label id="fileLabel" class="w-full h-full flex-col items-center px-5 py-2 mb-0 bg-white text-black uppercase border border-red cursor-pointer hover:bg-red hover:text-white">
-    <div id="fileName" class=" flex justify-center">Select a PDF file</div>
-    <input type="file" name="file" accept=".pdf" class="hidden" onchange="updateFileName(event)" />
+    <div id="fileName" class=" flex justify-center">Select one or multiple PDF files</div>
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" accept=".pdf" name="file" multiple>
+    </form>
+
+    <!-- <input type="file" name="file" accept=".pdf" class="hidden" onchange="updateFileName(event)" /> -->
   </label>
+
+
   <button class="w-full max-w-62 flex btn btn-primary" type="submit">Informationen generieren</button>
 </div>
 
