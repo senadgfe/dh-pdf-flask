@@ -14,9 +14,11 @@ application = Flask(__name__)
 
 # Configuration
 UPLOAD_FOLDER = './static/uploads'
+WORKING_FOLDER = './static/uploads/working'
 UPLOAD_FOLDER_ANNOTATED = './static/uploads/annotated'
 ALLOWED_EXTENSIONS = {'pdf'}
 application.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+application.config['WORKING_FOLDER'] = WORKING_FOLDER
 application.config['UPLOAD_FOLDER_ANNOTATED'] = UPLOAD_FOLDER_ANNOTATED
 application.config['MAX_CONTENT_LENGTH'] = 16 * \
     1024 * 1024  # 16MB upload limit
@@ -85,7 +87,7 @@ def hide_layers_box_outlines(file_path, specific_layer=None):
 
     # Save the modified PDF and return its file path
     new_file_path = os.path.join(
-        application.config['UPLOAD_FOLDER'], "hidden_layers_box_outlines_" + os.path.basename(file_path))
+        application.config['WORKING_FOLDER'], "hidden_layers_box_outlines_" + os.path.basename(file_path))
     doc.save(new_file_path, garbage=4)
     doc.close()
 
@@ -118,7 +120,7 @@ def hide_layers(file_path, specific_layer=None):
 
     # Save the modified PDF and return its file path
     new_file_path = os.path.join(
-        application.config['UPLOAD_FOLDER'], os.path.basename(file_path) + "_hl")
+        application.config['WORKING_FOLDER'],"HL_" + os.path.basename(file_path) )
     doc2.save(new_file_path, garbage=4)
     doc2.close()
 
