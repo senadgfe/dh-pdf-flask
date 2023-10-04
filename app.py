@@ -2,16 +2,14 @@ from flask import Flask, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
 import os
 import pytesseract
-from pdf2image import convert_from_path
 import fitz
 import numpy as np
-from datetime import datetime
 from flask import flash
 import re
 import cv2
 from PIL import Image, ImageDraw, ImageFont
 
-application = Flask(__name__)
+application = Flask(__name__) 
 
 # Configurationsl
 UPLOAD_FOLDER = './static/uploads'
@@ -33,7 +31,7 @@ def generate_model_name(dimensions):
     # get rid of .0 at the end
     numbers = [num.split('.')[0] for num in numbers]
     # Generate the model name
-    if len(numbers) == 3:  # If there are three dimensions
+    if len(numbers) == 3:  # If there are three dimensions 
         return f"MV{numbers[0]}x{numbers[1]}x{numbers[2]}"
     elif len(numbers) == 2:  # If there are two dimensions
         return f"MV{numbers[0]}x{numbers[1]}"
@@ -42,19 +40,8 @@ def generate_model_name(dimensions):
 
 # Function to check file extension
 
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-def convert_pdf_to_images_with_pymupdf(file_path, dpi=600):
-    doc = fitz.open(file_path)
-    images = []
-    for page in doc:
-        pix = page.get_pixmap(matrix=fitz.Matrix(dpi/72, dpi/72))
-        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-        images.append(img)
-    return images
 
 
 def extract_text_from_pdf(file_path):
@@ -71,6 +58,15 @@ def extract_text_from_pdf(file_path):
 
     return extracted_text
 
+
+def convert_pdf_to_images_with_pymupdf(file_path, dpi=600):
+    doc = fitz.open(file_path)
+    images = []
+    for page in doc:
+        pix = page.get_pixmap(matrix=fitz.Matrix(dpi/72, dpi/72))
+        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+        images.append(img)
+    return images
 
 def hide_layers_box_outlines(file_path, specific_layer=None):
     doc = fitz.open(file_path)
@@ -102,6 +98,7 @@ def hide_layers_box_outlines(file_path, specific_layer=None):
     doc.close()
 
     return new_file_path
+
 
 
 def hide_layers(file_path, specific_layer=None):
@@ -172,6 +169,7 @@ def extract_dimensions(text):
             print("Extracted dimensions:", dimensions)
             return dimensions
 
+    
     return None
 
 
@@ -208,8 +206,7 @@ def get_image_objects_dimensions_and_draw(image, cutter_image, image_name, model
     cutter_image_original = cutter_image.copy()
     print(original_image)
 
-    specific_layer_path = hide_layers(file_path, specific_layer=[
-                                      'dispersionslack', 'lack', 'dispersion', 'uv-lack'])
+    specific_layer_path = hide_layers(file_path, specific_layer=['dispersionslack', 'lack', 'dispersion', 'uv-lack'])
     specific_layer_image = convert_pdf_to_images_with_pymupdf(
         specific_layer_path, dpi=600)[0]  # Assuming it's a single page
 
@@ -217,6 +214,7 @@ def get_image_objects_dimensions_and_draw(image, cutter_image, image_name, model
         file_path, specific_layer=['dispersionslack', 'lack', 'dispersion', 'uv-lack'])
     specific_layer_image_box_outlines = convert_pdf_to_images_with_pymupdf(
         specific_layer_path_box_outlines, dpi=600)[0]  # Assuming it's a single page
+
 
     def extract_contours_and_crop(np_img, original_img):
         gray = cv2.cvtColor(np_img, cv2.COLOR_RGB2GRAY)
@@ -241,10 +239,10 @@ def get_image_objects_dimensions_and_draw(image, cutter_image, image_name, model
 
     sub_image, x_min, x_max, y_min, y_max = extract_contours_and_crop(
         np.array(specific_layer_image), original_image)
-
+    
     sub_image_box_outlines, _, _, _, _ = extract_contours_and_crop(
         np.array(specific_layer_image_box_outlines), cutter_image_original)
-
+    
     if None in [x_min, x_max, y_min, y_max]:
         # Handle the case where the values are None, perhaps by returning early or setting default values
         return None
@@ -281,14 +279,14 @@ def get_image_objects_dimensions_and_draw(image, cutter_image, image_name, model
     # Save the sub-image_box_outlines with timestamp
     sub_image_path_box_outlines = os.path.join(
         annotated_folder_path, f'{image_name}_box_outlines.png')
-    sub_image_box_outlines_pil.save(
-        sub_image_path_box_outlines, "PNG", quality=95)
+    sub_image_box_outlines_pil.save(sub_image_path_box_outlines, "PNG", quality=95)
 
     # Relative paths for serving images to the frontend with timestamp
     sub_image_path = os.path.join(
         '/uploads/annotated/', f'{image_name}_{model_variation}.png')
     sub_image_path_box_outlines = os.path.join(
         '/uploads/annotated/', f'{image_name}_box_outlines.png')
+
 
     return {
         # "image_path": image_path,
@@ -298,12 +296,11 @@ def get_image_objects_dimensions_and_draw(image, cutter_image, image_name, model
         "proportion": proportion_string
     }
 
-
 def process_pdf(file_path):
     # Hide layers in PDF first
     hidden_layers_pdf_path = hide_layers(file_path)
     hidden_layers_pdf_path_box_outlines = hide_layers_box_outlines(file_path)
-
+    
     # extract filename
     # Normalize the path to handle mixed slashes
     normalized_path = os.path.normpath(hidden_layers_pdf_path)
@@ -314,12 +311,13 @@ def process_pdf(file_path):
     image_name = os.path.splitext(file_name)[0]
 
     # Then, Convert the modified PDFs to images
-    images = convert_from_path(hidden_layers_pdf_path, dpi=600)
-    images_box_outlines = convert_from_path(
+    images = convert_pdf_to_images_with_pymupdf(
+        hidden_layers_pdf_path, dpi=600)
+    images_box_outlines = convert_pdf_to_images_with_pymupdf(
         hidden_layers_pdf_path_box_outlines, dpi=600)
-
+    
     # Convert the original PDF to images for OCR
-    original_images = convert_from_path(file_path, dpi=600)
+    original_images = convert_pdf_to_images_with_pymupdf(file_path, dpi=600)
 
     extracted_text = ''
     for image in original_images:
@@ -332,6 +330,7 @@ def process_pdf(file_path):
     model_variation = generate_model_name(
         text_dimensions) if text_dimensions else 'Model not found'
 
+
     # Get image dimensions
     sub_image_paths = []
     image_dimensions = []
@@ -343,18 +342,17 @@ def process_pdf(file_path):
         result = get_image_objects_dimensions_and_draw(
             images[i], images_box_outlines[i], image_name, model_variation, file_path)
 
+
         if result is not None:
-            # image_file_paths.append(result["image_path"])
+            #image_file_paths.append(result["image_path"])
             sub_image_paths.append(result["sub_image_path"])
             image_dimensions.append(result["dimensions"])
             image_proportions.append(result["proportion"])
-            sub_image_paths_box_outlines.append(
-                result["sub_image_path_box_outlines"])
+            sub_image_paths_box_outlines.append(result["sub_image_path_box_outlines"])
 
     print("Extracted text:", extracted_text)
 
     return images, text_dimensions, image_dimensions, image_proportions, sub_image_paths, model_variation, sub_image_paths_box_outlines
-
 
 @application.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -367,9 +365,9 @@ def upload_file():
         # If user does not select a file, the browser also submits an empty part without a filename
         if file.filename == '':
             flash('No selected file')
-            return redirect(request.url)
+            return redirect(request.url)    
         if file and allowed_file(file.filename):
-
+        
             filename = secure_filename(file.filename)
             file_path = os.path.join(
                 application.config['UPLOAD_FOLDER'], filename)
@@ -381,11 +379,11 @@ def upload_file():
 
             # Return the dimensions to the user
             return render_template('upload.html',
-                                   text_dimensions=text_dimensions,
-                                   dimensions=image_dimensions,
-                                   sub_image_paths=sub_image_paths,
-                                   sub_image_paths_box_outlines=sub_image_paths_box_outlines,
-                                   model_variation=model_variation)
+                                text_dimensions=text_dimensions,
+                                dimensions=image_dimensions,
+                                sub_image_paths=sub_image_paths,
+                                sub_image_paths_box_outlines=sub_image_paths_box_outlines,
+                                model_variation=model_variation)
 
     return render_template('upload.html')
 
@@ -396,3 +394,4 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER_ANNOTATED):
         os.makedirs(UPLOAD_FOLDER_ANNOTATED)
     application.run(port=5003, debug=True)
+
