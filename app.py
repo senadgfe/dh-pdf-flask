@@ -13,10 +13,12 @@ application = Flask(__name__)
 
 # Configurationsl
 UPLOAD_FOLDER = './static/uploads'
+WORKING_FOLDER = './static/uploads/working'
 UPLOAD_FOLDER_ANNOTATED = './static/uploads/annotated'
 ALLOWED_EXTENSIONS = {'pdf'}
 application.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 application.config['UPLOAD_FOLDER_ANNOTATED'] = UPLOAD_FOLDER_ANNOTATED
+application.config['WORKING_FOLDER'] = WORKING_FOLDER
 application.config['MAX_CONTENT_LENGTH'] = 16 * \
     1024 * 1024  # 16MB upload limit
 
@@ -93,7 +95,7 @@ def hide_layers_box_outlines(file_path, specific_layer=None):
 
     # Save the modified PDF and return its file path
     new_file_path = os.path.join(
-        application.config['UPLOAD_FOLDER'], "hidden_layers_box_outlines_" + os.path.basename(file_path))
+        application.config['WORKING_FOLDER'], "hidden_layers_box_outlines_" + os.path.basename(file_path))
     doc.save(new_file_path)
     doc.close()
 
@@ -126,7 +128,7 @@ def hide_layers(file_path, specific_layer=None):
 
     # Save the modified PDF and return its file path
     new_file_path = os.path.join(
-        application.config['UPLOAD_FOLDER'], "hl_" + os.path.basename(file_path))
+        application.config['WORKING_FOLDER'],os.path.basename(file_path) )
     doc2.save(new_file_path)
     doc2.close()
 
@@ -204,7 +206,6 @@ def get_image_objects_dimensions_and_draw(image, cutter_image, image_name, model
     # Create a copy of the original image to prevent color distortion and annotations
     original_image = image.copy()
     cutter_image_original = cutter_image.copy()
-    print(original_image)
 
     specific_layer_path = hide_layers(file_path, specific_layer=['dispersionslack', 'lack', 'dispersion', 'uv-lack'])
     specific_layer_image = convert_pdf_to_images_with_pymupdf(
@@ -317,7 +318,7 @@ def process_pdf(file_path):
         hidden_layers_pdf_path_box_outlines, dpi=600)
     
     # Convert the original PDF to images for OCR
-    original_images = convert_pdf_to_images_with_pymupdf(file_path, dpi=600)
+    original_images = convert_pdf_to_images_with_pymupdf(file_path, dpi=800)
 
     extracted_text = ''
     for image in original_images:
@@ -355,38 +356,47 @@ def process_pdf(file_path):
     return images, text_dimensions, image_dimensions, image_proportions, sub_image_paths, model_variation, sub_image_paths_box_outlines
 
 @application.route('/', methods=['GET', 'POST'])
-def upload_file():
+def upload_files():
     if request.method == 'POST':
-        # Check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # If user does not select a file, the browser also submits an empty part without a filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)    
-        if file and allowed_file(file.filename):
-        
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(
+        uploaded_files = request.files.getlist("file")
+        if len(uploaded_files) == 1:
+            print("One file selected, showing resluts after calculation is done!")
+            file = uploaded_files[0]
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)    
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(
+                    application.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+
+
+                # Process the new PDF file
+                images, text_dimensions, image_dimensions, image_proportions, sub_image_paths, model_variation, sub_image_paths_box_outlines = process_pdf(
+                    file_path)
+
+                # Return the dimensions to the user
+                return render_template('upload.html',
+                                    text_dimensions=text_dimensions,
+                                    dimensions=image_dimensions,
+                                    sub_image_paths=sub_image_paths,
+                                    sub_image_paths_box_outlines=sub_image_paths_box_outlines,
+                                    model_variation=model_variation)  
+        else:
+            print("Multiple files selected, processing in Background")
+            for file in uploaded_files:
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(
                 application.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
+                
+                # Process the new PDF file
+                images, text_dimensions, image_dimensions, image_proportions, sub_image_paths, model_variation, sub_image_paths_box_outlines = process_pdf(
+                    file_path)
 
-            # Process the new PDF file
-            images, text_dimensions, image_dimensions, image_proportions, sub_image_paths, model_variation, sub_image_paths_box_outlines = process_pdf(
-                file_path)
-
-            # Return the dimensions to the user
-            return render_template('upload.html',
-                                text_dimensions=text_dimensions,
-                                dimensions=image_dimensions,
-                                sub_image_paths=sub_image_paths,
-                                sub_image_paths_box_outlines=sub_image_paths_box_outlines,
-                                model_variation=model_variation)
-
+    
     return render_template('upload.html')
-
+        
 
 if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER):
