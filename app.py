@@ -46,20 +46,13 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def extract_text_from_pdf(file_path):
-    # Convert each PDF page to an image
-    images = convert_pdf_to_images_with_pymupdf(
-        file_path, dpi=600, output_icc="sRGB")  # Set dpi to 600
-
-    # Initialize an empty string to hold the extracted text
-    extracted_text = ''
-
-    # Loop through each image and perform OCR
-    for i in range(len(images)):
-        extracted_text += pytesseract.image_to_string(images[i])
-
-    return extracted_text
-
+def post_process_ocr(text):
+    # Correct the pattern '7/' to '7'
+    text = re.sub(r'7/', '7', text)
+    # If there's a non-digit character followed by / (excluding whitespace), replace with '7'
+    text = re.sub(r'(?<=\D)/', '7', text)
+    return text
+ 
 
 def convert_pdf_to_images_with_pymupdf(file_path, dpi=600):
     doc = fitz.open(file_path)
@@ -323,6 +316,8 @@ def process_pdf(file_path):
     extracted_text = ''
     for image in original_images:
         extracted_text += pytesseract.image_to_string(image)
+        extracted_text += post_process_ocr(extracted_text)
+
 
     # Extract dimensions from the text
     text_dimensions = extract_dimensions(extracted_text)
