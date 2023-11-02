@@ -14,11 +14,11 @@ testingSet = [
 ]
 
 blender_executable = "blender"  # Replace with the full path to your Blender executable if necessary
-blender_file = os.path.abspath(".././Blender/Boxgenerator.blend")  # Replace with the correct path to your Blender file
-script = ".././Blender/scripts/Generate_Images.py"
-rgb_profile = "./profiles/sRGB.icm"
-cmyk_profile = "./profiles/ISOcoated_v2_300_eci.icc"
-output_folder = os.path.abspath(".././Blender/output")
+blender_file = os.path.abspath("./blender/Boxgenerator.blend")  # Replace with the correct path to your Blender file
+script = "./blender/generate_images.py"
+rgb_profile = "./blender/output/profiles/sRGB.icm"
+cmyk_profile = "./blender/output/profiles/ISOcoated_v2_300_eci.icc"
+output_folder = 'C:/Shared/Work/GFE/dh-pdf-flask/blender/output'
 
 def generate_images():
     for image in testingSet:
@@ -36,5 +36,12 @@ def convert_to_cmyk():
         convert_cmyk = f"convert {file} -profile {rgb_profile} -profile {cmyk_profile} {file}"
         os.system(convert_cmyk)
         
-generate_images()
-convert_to_cmyk()
+def generate_image():
+    image_path = 'C:/Shared/Work/GFE/dh-pdf-flask/static/uploads/annotated/90586393_FS_DH_AugenTropfen_Hyaluron_04_Extra_10ml-PDFX4_2_MV31x31x87.png'
+    generate_image = f"{blender_executable} -b {blender_file} -P {script} -- {image_path} {output_folder}"
+    os.system(generate_image)
+    
+generate_image()
+
+# generate_images()
+# convert_to_cmyk()
