@@ -18,7 +18,7 @@ blender_file = os.path.abspath("./blender/Boxgenerator.blend")  # Replace with t
 script = "./blender/generate_images.py"
 rgb_profile = "./profiles/sRGB.icm"
 cmyk_profile = "./profiles/ISOcoated_v2_300_eci.icc"
-output_folder = 'C:/Shared/Work/GFE/dh-pdf-flask/blender/output'
+output_folder = 'C:/Work/GFE/dh-pdf-flask/blender/output'
 
 def generate_images():
     for texture in testingSet:
@@ -36,11 +36,11 @@ def convert_to_cmyk():
         os.system(convert_cmyk)
         
 def generate_single_image(texture):
-    # image_path = 'C:/Shared/Work/GFE/dh-pdf-flask/static/uploads/annotated/90586393_FS_DH_AugenTropfen_Hyaluron_04_Extra_10ml-PDFX4_2_MV31x31x87.png'
     generate_image = f"{blender_executable} -b {blender_file} -P {script} -- {texture} {output_folder}"
     os.system(generate_image)
     
-# generate_single_image()
+image_path = "C:/Users/Lorenz/Downloads/hl_90587915_FS_DH_Heisser_Curcuma+Manuka-Honig_Btl_10-PDFX4_2_MV94x75x128.png"
+generate_single_image(image_path)
 
-generate_images()
+# generate_images()
 convert_to_cmyk()
