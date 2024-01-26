@@ -13,12 +13,15 @@ testingSet = [
 "C:/Shared/Work/GFE/dh-pdf-flask/static/uploads/annotated/90588403_FS_DH_B12_Intense_Vita_Energie_TrinkFl_18er-PDFX4_2_MV75x75x130.png",
 ]
 
+elektrolyte = "C:/Shared/Work/GFE/dh-pdf-flask/static/uploads/annotated/90588409_FS_DH_Elektrolyte_Extra_20_Btl-PDFX4_2_MV130x52x110.png"
+
+
 blender_executable = "blender"  # Replace with the full path to your Blender executable if necessary
 blender_file = os.path.abspath("./blender/Boxgenerator.blend")  # Replace with the correct path to your Blender file
 script = "./blender/generate_images.py"
 rgb_profile = "./profiles/sRGB.icm"
 cmyk_profile = "./profiles/ISOcoated_v2_300_eci.icc"
-output_folder = 'C:/Work/GFE/dh-pdf-flask/blender/output'
+output_folder = 'C:/Shared/Work/GFE/dh-pdf-flask/blender/output'
 
 def generate_images():
     for texture in testingSet:
@@ -39,7 +42,7 @@ def generate_single_image(texture):
     generate_image = f"{blender_executable} -b {blender_file} -P {script} -- {texture} {output_folder}"
     os.system(generate_image)
     
-image_path = "C:/Users/Lorenz/Downloads/hl_90587915_FS_DH_Heisser_Curcuma+Manuka-Honig_Btl_10-PDFX4_2_MV94x75x128.png"
+image_path = elektrolyte
 generate_single_image(image_path)
 
 # generate_images()
