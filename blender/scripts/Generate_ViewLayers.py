@@ -21,7 +21,7 @@ def generate_view_layers():
 def change_collection_visibility():
     for view_layer in bpy.context.scene.view_layers:
         for view_collection in view_layer.layer_collection.children:
-            if view_collection.name == view_layer.name:
+            if view_collection.name == view_layer.name or view_collection.name in show_layers:
                     view_collection.exclude = False
             else:
                     view_collection.exclude = True

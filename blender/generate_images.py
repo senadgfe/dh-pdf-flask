@@ -17,6 +17,10 @@ if len(sys.argv) > 3:
     print("Texture File: ", texture_path)
     print("Output Folder: ", output_folder)
     
+else:
+    texture_path = "C:/Shared/Work/GFE/dh-pdf-flask/static/uploads/annotated/90588409_FS_DH_Elektrolyte_Extra_20_Btl-PDFX4_2_MV130x52x110.png"
+    output_folder = "C:/Shared/Work/GFE/dh-pdf-flask/blender/output"
+    output_folder = output_folder.replace("\\", "/")
     
 mv = texture_path.removesuffix(".png").split("MV")[1]
 print("Model Varaint: ",mv)
@@ -68,11 +72,14 @@ def replace_texture(texture_path):
         print("Error: Texture file not found!")
         
 def setup_view_layer(mv):
+    mv_found = False
+    
     # Iterate through all the view layers
     for view_layer in bpy.context.scene.view_layers:
         # Check if the view layer name contains the specified string
         if mv in view_layer.name:
             # Enable the view layer for rendering
+            mv_found = True
             print("MV in " + view_layer.name)
             view_layer.use = True
             # Set this view layer in the render layers for the compositor
@@ -83,6 +90,9 @@ def setup_view_layer(mv):
         else:
             # Disable other view layers for rendering
             view_layer.use = False  
+    
+    if mv_found == False:
+        print("!!! Model Varaint not found, needs to be added first !!!")
             
         
 def render_images(image_name):  

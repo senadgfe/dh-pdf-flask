@@ -13,8 +13,13 @@ testingSet = [
 "C:/Shared/Work/GFE/dh-pdf-flask/static/uploads/annotated/90588403_FS_DH_B12_Intense_Vita_Energie_TrinkFl_18er-PDFX4_2_MV75x75x130.png",
 ]
 
-elektrolyte = "C:/Shared/Work/GFE/dh-pdf-flask/static/uploads/annotated/90588409_FS_DH_Elektrolyte_Extra_20_Btl-PDFX4_2_MV130x52x110.png"
-
+class Image_Textures: 
+    elektrolyte = r"C:\Shared\Work\GFE\dh-pdf-flask\static\uploads\annotated\90588409_FS_DH_Elektrolyte_Extra_20_Btl-PDFX4_2_MV130x52x110.png"
+    az = r"C:\Shared\Work\GFE\dh-pdf-flask\static\uploads\annotated\90587479_FS_DH_A_Z_Complete_DEPOT_Tbl_40-PDFX4_2_MV85x46x122.png"
+    
+class Engine:
+    eevee = "BLENDER_EEVEE"
+    cycles = "CYCLES"
 
 blender_executable = "blender"  # Replace with the full path to your Blender executable if necessary
 blender_file = os.path.abspath("./blender/Boxgenerator.blend")  # Replace with the correct path to your Blender file
@@ -38,12 +43,14 @@ def convert_to_cmyk():
         convert_cmyk = f"convert {file} -profile {rgb_profile} -profile {cmyk_profile} {file}"
         os.system(convert_cmyk)
         
-def generate_single_image(texture):
-    generate_image = f"{blender_executable} -b {blender_file} -P {script} -- {texture} {output_folder}"
+def generate_single_image(texture_path):
+    texture_path = texture_path.replace("\\", "/")
+    generate_image = f"{blender_executable} -b {blender_file} -P {script} -- {texture_path} {output_folder}"
     os.system(generate_image)
     
-image_path = elektrolyte
-generate_single_image(image_path)
+texture_path = Image_Textures.az
+print(texture_path)
+generate_single_image(texture_path)
 
 # generate_images()
 convert_to_cmyk()
