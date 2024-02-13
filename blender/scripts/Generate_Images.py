@@ -3,27 +3,32 @@ import os
 import sys
 import subprocess
 
-
-# Get the relative path to the texture
-relative_path = "textures/annotated/"
-
-#texture_name = "90586393_FS_DH_AugenTropfen_Hyaluron_04_Extra_10ml-PDFX4_2_MV_31x31x87.png"
-texture_name = "90586810_FS_DHP_Minoxidil_fuer_Frauen_60ml-PDFX4_2_MV100x40x162.png"
-texture_path = os.path.join(os.path.dirname(bpy.data.filepath), relative_path, texture_name)
-texture_path = texture_path.replace("\\", "/")
+texture_path = ""
+output_folder = ""
+image_name = ""
 
 
 if len(sys.argv) > 3:
     # Access the parameter value
-    texture_name = sys.argv[-1]
-    
-mv = texture_name.removesuffix(".png").split("MV")[1]
+    texture_path = sys.argv[6]
+    output_folder = sys.argv[7]
+    image_name = os.path.basename(texture_path)
 
-print("Texture Named passed: ", texture_name)
+    print("Texture File: ", texture_path)
+    print("Output Folder: ", output_folder)
+    
+else:
+    texture_path = "C:/Shared/Work/GFE/dh-pdf-flask/static/uploads/annotated/90588409_FS_DH_Elektrolyte_Extra_20_Btl-PDFX4_2_MV130x52x110.png"
+    output_folder = "C:/Shared/Work/GFE/dh-pdf-flask/blender/output"
+    output_folder = output_folder.replace("\\", "/")
+    
+mv = texture_path.removesuffix(".png").split("MV")[1]
 print("Model Varaint: ",mv)
 
+
+
 # override the texture path
-texture_path = os.path.join(os.path.dirname(bpy.data.filepath), relative_path, texture_name)
+# texture_path = os.path.join(os.path.dirname(bpy.data.filepath), relative_path, texture_path)
 
 def find_image(texture_path):
     for img in bpy.data.images:
@@ -67,11 +72,14 @@ def replace_texture(texture_path):
         print("Error: Texture file not found!")
         
 def setup_view_layer(mv):
+    mv_found = False
+    
     # Iterate through all the view layers
     for view_layer in bpy.context.scene.view_layers:
         # Check if the view layer name contains the specified string
         if mv in view_layer.name:
             # Enable the view layer for rendering
+            mv_found = True
             print("MV in " + view_layer.name)
             view_layer.use = True
             # Set this view layer in the render layers for the compositor
@@ -82,6 +90,10 @@ def setup_view_layer(mv):
         else:
             # Disable other view layers for rendering
             view_layer.use = False  
+    
+    if mv_found == False:
+        print("!!! Model Varaint not found, needs to be added first !!!")
+    return mv_found      
             
         
 def render_images(image_name):  
@@ -99,13 +111,13 @@ def render_images(image_name):
     bpy.context.scene.render.image_settings.file_format = 'TIFF'
 
     # Create a new folder for the rendered images
-    output_folder = os.path.join(os.path.dirname(bpy.data.filepath), "output")
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
     # Loop through four rotations and renders
     for i in range(4):
 
+        print(f'Saving image to : {output_folder}' )
         # Set the filepath for the rendered image
         bpy.context.scene.render.filepath = os.path.join(output_folder, names[i] + ".tiff")
         
@@ -116,11 +128,10 @@ def render_images(image_name):
         obj.rotation_euler[2] += 1.5708
 
     obj.rotation_euler[2] = 0
+
+
     
-
-
 replace_texture(texture_path)
-setup_view_layer(mv)
-render_images(texture_name)
-
-
+mv_found = setup_view_layer(mv)
+if mv_found:
+    render_images(image_name)
